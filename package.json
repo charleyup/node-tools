@@ -2,13 +2,19 @@
   "name": "tools",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "dist/tools.js",
+  "module": "dist/tools.mjs",
   "scripts": {
+    "build": "rollup -c",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "jszip": "^3.9.1"
+  },
+  "devDependencies": {
+    "rollup": "^2.70.2",
+    "rollup-plugin-json": "^4.0.0"
   }
 }

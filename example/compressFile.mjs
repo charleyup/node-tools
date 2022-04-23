@@ -1,5 +1,5 @@
 import { compressFile } from '../src/zip.mjs'
-const localPath = './node_modules'
+const localPath = './package.json'
 const zipPath = 'zip_test.zip'
 compressFile(localPath, zipPath).then(() => {
     console.log('压缩成功')

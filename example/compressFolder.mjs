@@ -1,4 +1,4 @@
-import { compressFolder } from '../src/zip.mjs'
+import { compressFolder } from '../dist/tools.mjs'
 const localPath = './node_modules'
 const zipPath = 'zip_test.zip'
 compressFolder(localPath, zipPath).then(() => {
