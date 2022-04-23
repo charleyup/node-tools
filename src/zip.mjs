@@ -18,10 +18,8 @@ const readDir = (zip, dirPath) => {
     });
 }
 
-const compress = (localPath, zipPath) => {
-    // const rootFolder = zip.folder(path.basename(localPath))
-    readDir(zip, localPath)
-    return new Promise((resolve, reject) => {
+const generateZip = (zip, zipPath) => {
+    return new Promise((resolve) => {
         zip.generateAsync({
             type: 'nodebuffer',
             compression: 'DEFLATE',
@@ -35,6 +33,37 @@ const compress = (localPath, zipPath) => {
     })
 }
 
+/**
+ * 压缩文件夹
+ * @date 2022-04-23
+ * @param {String} 待压缩的文件夹路径
+ * @param {String} 压缩文件生成路径
+ * @returns {Promise}
+ */
+const compressFolder = (localPath, zipPath) => {
+    readDir(zip, localPath)
+    return generateZip(zip, zipPath)
+}
+
+/**
+ * 压缩文件
+ * @date 2022-04-23
+ * @param {String} 待压缩的文件夹路径
+ * @param {String} 压缩文件生成路径
+ * @returns {Promise}
+ */
+const compressFile = (localPath, zipPath) => {
+    zip.file(path.basename(localPath), fs.readFileSync(localPath))
+    return generateZip(zip, zipPath)
+}
+
+/**
+ * 解压zip文件
+ * @date 2022-04-23
+ * @param {String} 待解压的文件夹路径
+ * @param {String} 解压路径
+ * @returns {Promise}
+ */
 const uncompress = async (zipPath, localPath) => {
     const res = await zip.loadAsync(fs.readFileSync(zipPath))
     const files = res.files
@@ -56,6 +85,7 @@ const uncompress = async (zipPath, localPath) => {
 }
 
 export {
-    compress,
+    compressFolder,
+    compressFile,
     uncompress
 }
