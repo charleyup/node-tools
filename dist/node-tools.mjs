@@ -2,6 +2,7 @@ import JSZIP from 'jszip';
 import path, { dirname } from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+export { default as ora } from 'ora';
 
 const __filename = fileURLToPath(import.meta.url);
 dirname(__filename);
@@ -61,4 +62,31 @@ const compressFile = (localPath, zipPath) => {
     return generateZip(zip, zipPath)
 };
 
-export { compressFile, compressFolder };
+/**
+ * 解压zip文件
+ * @date 2022-04-23
+ * @param {String} 待解压的文件夹路径
+ * @param {String} 解压路径
+ * @returns {Promise}
+ */
+const uncompress = async (zipPath, localPath) => {
+    const res = await zip.loadAsync(fs.readFileSync(zipPath));
+    const files = res.files;
+    return new Promise((resolve) => {
+        for (const filename of Object.keys(files)) {
+            const dest = path.join(localPath, filename);
+            if (files[filename].dir) {
+                fs.mkdirSync(dest, {
+                    recursive: true
+                });
+            } else {
+                files[filename].async('nodebuffer').then(content => {
+                    fs.writeFileSync(dest, content);
+                });
+            }
+        }
+        resolve();
+    })
+};
+
+export { compressFile, compressFolder, uncompress };

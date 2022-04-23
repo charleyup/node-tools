@@ -1,5 +1,5 @@
 import ora from 'ora'
-import { compressFolder } from '../dist/tools.mjs'
+import { compressFolder } from '../dist/node-tools.mjs'
 const localPath = './node_modules'
 const zipPath = 'node_modules.zip'
 const spinner = ora('开始压缩').start()

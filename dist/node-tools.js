@@ -6,14 +6,16 @@ var JSZIP = require('jszip');
 var path = require('path');
 var fs = require('fs');
 var url = require('url');
+var ora = require('ora');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
 var JSZIP__default = /*#__PURE__*/_interopDefaultLegacy(JSZIP);
 var path__default = /*#__PURE__*/_interopDefaultLegacy(path);
 var fs__default = /*#__PURE__*/_interopDefaultLegacy(fs);
+var ora__default = /*#__PURE__*/_interopDefaultLegacy(ora);
 
-const __filename$1 = url.fileURLToPath((typeof document === 'undefined' ? new (require('u' + 'rl').URL)('file:' + __filename).href : (document.currentScript && document.currentScript.src || new URL('tools.js', document.baseURI).href)));
+const __filename$1 = url.fileURLToPath((typeof document === 'undefined' ? new (require('u' + 'rl').URL)('file:' + __filename).href : (document.currentScript && document.currentScript.src || new URL('node-tools.js', document.baseURI).href)));
 path.dirname(__filename$1);
 
 const zip = new JSZIP__default["default"]();
@@ -71,5 +73,37 @@ const compressFile = (localPath, zipPath) => {
     return generateZip(zip, zipPath)
 };
 
+/**
+ * 解压zip文件
+ * @date 2022-04-23
+ * @param {String} 待解压的文件夹路径
+ * @param {String} 解压路径
+ * @returns {Promise}
+ */
+const uncompress = async (zipPath, localPath) => {
+    const res = await zip.loadAsync(fs__default["default"].readFileSync(zipPath));
+    const files = res.files;
+    return new Promise((resolve) => {
+        for (const filename of Object.keys(files)) {
+            const dest = path__default["default"].join(localPath, filename);
+            if (files[filename].dir) {
+                fs__default["default"].mkdirSync(dest, {
+                    recursive: true
+                });
+            } else {
+                files[filename].async('nodebuffer').then(content => {
+                    fs__default["default"].writeFileSync(dest, content);
+                });
+            }
+        }
+        resolve();
+    })
+};
+
+Object.defineProperty(exports, 'ora', {
+    enumerable: true,
+    get: function () { return ora__default["default"]; }
+});
 exports.compressFile = compressFile;
 exports.compressFolder = compressFolder;
+exports.uncompress = uncompress;

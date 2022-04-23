@@ -1,7 +1,8 @@
-import { compressFile, compressFolder } from "./zip.mjs"
-import Ora from 'ora'
+import { compressFile, compressFolder, uncompress } from "./zip.mjs"
+import ora from 'ora'
 export {
     compressFile,
     compressFolder,
-    Ora
+    uncompress,
+    ora
 }
