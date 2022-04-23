@@ -11,7 +11,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "jszip": "^3.9.1"
+    "jszip": "^3.9.1",
+    "ora": "^6.1.0",
+    "ssh2": "^1.9.0"
   },
   "devDependencies": {
     "rollup": "^2.70.2",
