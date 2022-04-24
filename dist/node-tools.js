@@ -5,7 +5,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 var JSZIP = require('jszip');
 var path = require('path');
 var fs = require('fs');
-var url = require('url');
+var ssh2 = require('ssh2');
 var ora = require('ora');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
@@ -14,9 +14,6 @@ var JSZIP__default = /*#__PURE__*/_interopDefaultLegacy(JSZIP);
 var path__default = /*#__PURE__*/_interopDefaultLegacy(path);
 var fs__default = /*#__PURE__*/_interopDefaultLegacy(fs);
 var ora__default = /*#__PURE__*/_interopDefaultLegacy(ora);
-
-const __filename$1 = url.fileURLToPath((typeof document === 'undefined' ? new (require('u' + 'rl').URL)('file:' + __filename).href : (document.currentScript && document.currentScript.src || new URL('node-tools.js', document.baseURI).href)));
-path.dirname(__filename$1);
 
 const zip = new JSZIP__default["default"]();
 
@@ -81,9 +78,10 @@ const compressFile = (localPath, zipPath) => {
  * @returns {Promise}
  */
 const uncompress = async (zipPath, localPath) => {
-    const res = await zip.loadAsync(fs__default["default"].readFileSync(zipPath));
-    const files = res.files;
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
+        const data = fs__default["default"].readFileSync(zipPath);
+        const res = await zip.loadAsync(data);
+        const files = res.files;
         for (const filename of Object.keys(files)) {
             const dest = path__default["default"].join(localPath, filename);
             if (files[filename].dir) {
@@ -100,10 +98,45 @@ const uncompress = async (zipPath, localPath) => {
     })
 };
 
+const conn = new ssh2.Client();
+const connect = (server) => {
+    return new Promise((resolve, reject) => {
+        conn.on('ready', () => {
+            conn.sftp((err, sftp) => {
+                err ? reject(err) : resolve(sftp); 
+            });
+        }).connect(server);
+    })
+};
+
+const download = (remotePath, localPath, server) => {
+    return new Promise((resolve, reject) => {
+        connect(server).then(sftp => {
+            sftp.fastGet(remotePath, localPath, err => {
+                err ? reject(err) : resolve();
+                conn.end();
+            });
+        });
+    })
+};
+
+const upload = (localPath, remotePath, server) => {
+    return new Promise((resolve, reject) => {
+        connect(server).then(sftp => {
+            sftp.fastPut(localPath, remotePath, err => {
+                err ? reject(err): resolve();
+                conn.end();
+            });
+        });
+    })
+};
+
 Object.defineProperty(exports, 'ora', {
     enumerable: true,
     get: function () { return ora__default["default"]; }
 });
 exports.compressFile = compressFile;
 exports.compressFolder = compressFolder;
+exports.download = download;
 exports.uncompress = uncompress;
+exports.upload = upload;

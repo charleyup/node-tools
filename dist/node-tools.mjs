@@ -1,11 +1,8 @@
 import JSZIP from 'jszip';
-import path, { dirname } from 'path';
+import path from 'path';
 import fs from 'fs';
-import { fileURLToPath } from 'url';
+import { Client } from 'ssh2';
 export { default as ora } from 'ora';
-
-const __filename = fileURLToPath(import.meta.url);
-dirname(__filename);
 
 const zip = new JSZIP();
 
@@ -70,9 +67,10 @@ const compressFile = (localPath, zipPath) => {
  * @returns {Promise}
  */
 const uncompress = async (zipPath, localPath) => {
-    const res = await zip.loadAsync(fs.readFileSync(zipPath));
-    const files = res.files;
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
+        const data = fs.readFileSync(zipPath);
+        const res = await zip.loadAsync(data);
+        const files = res.files;
         for (const filename of Object.keys(files)) {
             const dest = path.join(localPath, filename);
             if (files[filename].dir) {
@@ -89,4 +87,37 @@ const uncompress = async (zipPath, localPath) => {
     })
 };
 
-export { compressFile, compressFolder, uncompress };
+const conn = new Client();
+const connect = (server) => {
+    return new Promise((resolve, reject) => {
+        conn.on('ready', () => {
+            conn.sftp((err, sftp) => {
+                err ? reject(err) : resolve(sftp); 
+            });
+        }).connect(server);
+    })
+};
+
+const download = (remotePath, localPath, server) => {
+    return new Promise((resolve, reject) => {
+        connect(server).then(sftp => {
+            sftp.fastGet(remotePath, localPath, err => {
+                err ? reject(err) : resolve();
+                conn.end();
+            });
+        });
+    })
+};
+
+const upload = (localPath, remotePath, server) => {
+    return new Promise((resolve, reject) => {
+        connect(server).then(sftp => {
+            sftp.fastPut(localPath, remotePath, err => {
+                err ? reject(err): resolve();
+                conn.end();
+            });
+        });
+    })
+};
+
+export { compressFile, compressFolder, download, uncompress, upload };

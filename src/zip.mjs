@@ -1,7 +1,6 @@
 import JSZIP from 'jszip'
 import path from 'path'
 import fs from 'fs'
-import { __dirname } from './utils.mjs'
 const zip = new JSZIP()
 
 const readDir = (zip, dirPath) => {
@@ -65,9 +64,10 @@ const compressFile = (localPath, zipPath) => {
  * @returns {Promise}
  */
 const uncompress = async (zipPath, localPath) => {
-    const res = await zip.loadAsync(fs.readFileSync(zipPath))
-    const files = res.files
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
+        const data = fs.readFileSync(zipPath)
+        const res = await zip.loadAsync(data)
+        const files = res.files
         for (const filename of Object.keys(files)) {
             const dest = path.join(localPath, filename);
             if (files[filename].dir) {
